@@ -129,10 +129,14 @@ public class GitConnector implements IGitConnector {
                         continue;
                     }
 
-                    // Skip any refs matching the connection's branch filter
-                    if (gitConnection.getBranchFilter() != null && !gitConnection.getBranchFilter().trim().isEmpty() && refKey.contains(gitConnection.getBranchFilter())) {
-                        LOG.debug(String.format("Ignoring %s, matched the connection's branch filter %s", refKey, gitConnection.getBranchFilter()));
-                        continue;
+                    // Skip any refs matching the connection's branch filter regex
+                    if (gitConnection.getBranchFilter() != null && !gitConnection.getBranchFilter().trim().isEmpty()) {
+                        Pattern filterPattern = Pattern.compile(gitConnection.getBranchFilter(), Pattern.CASE_INSENSITIVE);
+                        Matcher matcher = filterPattern.matcher(refKey);
+                        if (matcher.find()) {
+                            LOG.debug(String.format("Ignoring %s, matched the connection's branch filter regex %s", refKey, gitConnection.getBranchFilter()));
+                            continue;
+                        }
                     }
 
                     // Add ref to list for processing
